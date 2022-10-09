@@ -17,10 +17,11 @@ fn main() {
         .run();
 }
 
-
-const NORMAL_BUTTON: Color = Color::rgb(0.15, 0.15, 0.15);
 const HOVERED_BUTTON: Color = Color::rgb(0.25, 0.25, 0.25);
 const PRESSED_BUTTON: Color = Color::rgb(0.35, 0.75, 0.35);
+const CADET_BLUE: Color = Color::rgb(95. / 255., 158. / 255., 160. / 255.);
+const TEAL: Color = Color::rgb(0. / 255., 128. / 255., 128. / 255.);
+const TEAL_GREEN: Color = Color::rgb(0. / 255., 130. / 255., 127. / 255.);
 
 fn button_system(
     mut interaction_query: Query<
@@ -35,10 +36,10 @@ fn button_system(
                 *color = PRESSED_BUTTON.into();
             }
             Interaction::Hovered => {
-                *color = HOVERED_BUTTON.into();
+                *color = CADET_BLUE.into();
             }
             Interaction::None => {
-                *color = NORMAL_BUTTON.into();
+                *color = TEAL.into();
             }
         }
     }
@@ -69,6 +70,19 @@ fn generate_left_side_buttons() -> ButtonBundle {
             align_items: AlignItems::Center,
             ..default()
         },
+        background_color: TEAL_GREEN.into(),
+        ..default()
+    }
+}
+
+fn generate_imageBundle(asset_server: &Res<AssetServer>, image: &str) -> ImageBundle {
+    ImageBundle {
+        style: Style {
+            size: Size::new(Val::Auto, Val::Auto),
+            ..default()
+        },
+        focus_policy: bevy::ui::FocusPolicy::Pass,
+        image: asset_server.load(image).into(),
         ..default()
     }
 }
@@ -81,6 +95,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         .spawn(NodeBundle {
             style: Style {
                 size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
+                flex_direction: FlexDirection::Row,
                 justify_content: JustifyContent::SpaceBetween,
                 ..default()
             },
@@ -92,12 +107,12 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             parent
                 .spawn(NodeBundle {
                     style: Style {
-                        size: Size::new(Val::Percent(15.0), Val::Percent(100.0)),
+                        size: Size::new(Val::Percent(10.0), Val::Percent(100.0)),
                         flex_direction: FlexDirection::ColumnReverse,
                         border: UiRect::right(Val::Px(2.0)),
                         ..default()
                     },
-                    background_color: Color::rgb(0.65, 0.65, 0.65).into(),
+                    background_color: Color::WHITE.into(),
                     ..default()
                 })
                 .with_children(|parent| {
@@ -105,45 +120,109 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                     parent
                         .spawn(generate_left_side_buttons())
                         .with_children(|parent| {
-                            // text
-                            parent
-                                .spawn(
-                                    ImageBundle {
-                                        style: Style {
-                                            size: Size::new(Val::Auto, Val::Auto),
-                                            ..default()
-                                        },
-                                        image: asset_server.load("images/back.png").into(),
-                                        ..default()
-                                    }
-                                );
-                            });
+                            // image
+                            parent.spawn(generate_imageBundle(&asset_server, "images/back.png"));
+                        });
                     parent
                         .spawn(generate_left_side_buttons())
                         .with_children(|parent| {
                             // text
-                        parent
-                            .spawn(
-                                ImageBundle {
-                                    style: Style {
-                                        size: Size::new(Val::Auto, Val::Auto),
-                                        ..default()
-                                    },
-                                    focus_policy: bevy::ui::FocusPolicy::Pass,
-                                    image: asset_server.load("images/home.png").into(),
-                                    ..default()
-                                }
-                            );
+                            parent.spawn(generate_imageBundle(&asset_server, "images/home.png"));
                         });
-                        parent
+                    parent
                         .spawn(generate_left_side_buttons())
                         .with_children(|parent| {
+                            parent.spawn(generate_imageBundle(&asset_server, "images/menu.png"));
+                        });
+                });
+            //right vertical split
+            parent
+                .spawn(NodeBundle {
+                    style: Style {
+                        size: Size::new(Val::Percent(90.0), Val::Percent(100.0)),
+                        flex_direction: FlexDirection::ColumnReverse,
+                        ..default()
+                    },
+                    background_color: CADET_BLUE.into(),
+                    ..default()
+                })
+                .with_children(|parent| {
+                    //top bar
+                    parent
+                        .spawn(NodeBundle {
+                            style: Style {
+                                size: Size::new(Val::Percent(100.0), Val::Percent(5.0)),
+                                flex_direction: FlexDirection::RowReverse,
+                                margin: UiRect::bottom(Val::Px(5.0)),
+                                ..default()
+                            },
+                            background_color: TEAL.into(),
+                            ..Default::default()
+                        })
+                        .with_children(|parent| {
+                            parent.spawn(
+                                TextBundle::from_section(
+                                    "04:20",
+                                    TextStyle {
+                                        font: asset_server.load(
+                                            "fonts/Code New Roman Nerd Font Complete Mono.otf",
+                                        ),
+                                        font_size: 30.0,
+                                        color: Color::WHITE,
+                                    },
+                                )
+                                .with_style(Style {
+                                    margin: UiRect::all(Val::Px(5.0)),
+                                    ..default()
+                                }),
+                            );
                             parent.spawn(ImageBundle {
                                 style: Style {
-                                    size: Size::new(Val::Auto, Val::Auto),
+                                    size: Size::new(Val::Percent(5.0), Val::Percent(100.0)),
+                                    padding: UiRect::right(Val::Percent(1.0)),
                                     ..default()
                                 },
-                                image: asset_server.load("images/menu.png").into(),
+                                calculated_size: CalculatedSize {
+                                    size: Size {
+                                        width: Val::Px(100.0),
+                                        height: Val::Px(100.0),
+                                    },
+                                },
+                                image: asset_server.load("images/network.png").into(),
+                                ..default()
+                            });
+                            parent.spawn(
+                                TextBundle::from_section(
+                                    "5G",
+                                    TextStyle {
+                                        font: asset_server.load(
+                                            "fonts/Code New Roman Nerd Font Complete Mono.otf",
+                                        ),
+                                        font_size: 30.0,
+                                        color: Color::WHITE,
+                                    },
+                                )
+                                .with_style(Style {
+                                    padding: UiRect::right(Val::Percent(1.0)),
+                                    ..default()
+                                }),
+                            );
+                            parent.spawn(ImageBundle {
+                                style: Style {
+                                    size: Size::new(Val::Percent(5.0), Val::Percent(100.0)),
+                                    padding: UiRect::right(Val::Percent(1.0)),
+                                    position_type: PositionType::Absolute,
+
+                                    position: UiRect::left(Val::Percent(0.0)),
+                                    ..default()
+                                },
+                                calculated_size: CalculatedSize {
+                                    size: Size {
+                                        width: Val::Px(100.0),
+                                        height: Val::Px(100.0),
+                                    },
+                                },
+                                image: asset_server.load("images/user.png").into(),
                                 ..default()
                             });
                         });
